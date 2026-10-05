@@ -1,0 +1,19 @@
+Execução assistida na cópia de nassauTickets-main.zip
+Comando: cd frontend && npm run build
+Node.js: v24.19.0 (o README recomenda Node.js 22 LTS)
+Resultado: código de saída 0
+
+> nassautickets-frontend@0.1.0 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+✓ 36 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.40 kB │ gzip:  0.27 kB
+dist/assets/index-Ja-mrCLG.css    6.47 kB │ gzip:  1.91 kB
+dist/assets/index-BXdnCr0b.js   229.32 kB │ gzip: 71.82 kB
+✓ built in 1.94s
+
+A compilação verifica que o frontend pode ser empacotado; não prova que todos os requisitos funcionam.
+Os arquivos gerados em frontend/dist não fazem parte desta contribuição.
