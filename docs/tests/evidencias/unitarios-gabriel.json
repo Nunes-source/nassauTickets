@@ -1,0 +1,93 @@
+{
+  "suite": "Gabriel Luann — testes unitários",
+  "executadoEm": "2026-10-05T00:59:02.812Z",
+  "ambiente": {
+    "node": "v24.19.0",
+    "fuso": "America/Sao_Paulo"
+  },
+  "total": 16,
+  "aprovados": 16,
+  "reprovados": 0,
+  "resultados": [
+    {
+      "id": "U01",
+      "descricao": "Numeração SP com data e três dígitos",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U02",
+      "descricao": "Numeração SG com sequência própria recebida pela função",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U03",
+      "descricao": "Numeração SE com sequência própria recebida pela função",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U04",
+      "descricao": "Sequência 9 com preenchimento de zeros",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U05",
+      "descricao": "Sequência 99 com preenchimento de zeros",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U06",
+      "descricao": "Sequência 999 preserva três dígitos",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U07",
+      "descricao": "Tipo e instante da emissão registrados",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U08",
+      "descricao": "Fila vazia retorna null",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U09",
+      "descricao": "SP é escolhida antes de SE e SG na regra simplificada",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U10",
+      "descricao": "SE é escolhida antes de SG quando não há SP",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U11",
+      "descricao": "SG é escolhida quando as outras filas estão vazias",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U12",
+      "descricao": "Dentro do mesmo tipo vale a chegada na lista",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U13",
+      "descricao": "Escolha não altera a fila original",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U14",
+      "descricao": "Hora exibida em horas e minutos no fuso definido",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U15",
+      "descricao": "Data recebida altera o prefixo da senha",
+      "status": "APROVADO"
+    },
+    {
+      "id": "U16",
+      "descricao": "Totem oferece apenas os três tipos previstos",
+      "status": "APROVADO"
+    }
+  ]
+}

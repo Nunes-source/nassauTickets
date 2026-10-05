@@ -1,0 +1,137 @@
+{
+  "origem": "nassauTickets-main.zip",
+  "totalArquivosOriginais": 26,
+  "arquivosOriginaisAlterados": 0,
+  "arquivos": [
+    {
+      "arquivo": ".gitignore",
+      "sha256": "ae3ac05cd16b0f6c4251fd30d74c12866d1ba6daa365aacc2e32ddfc09a478f6",
+      "preservado": true
+    },
+    {
+      "arquivo": "LICENSE",
+      "sha256": "7a8410fda4cc24472963e924998d6813a7a0ffb25da75df70416f9519a935c46",
+      "preservado": true
+    },
+    {
+      "arquivo": "README.md",
+      "sha256": "35c5f51add5f48844215e38290a5e0d0c322ee8a10e67bce50dbdf87dcd7e63e",
+      "preservado": true
+    },
+    {
+      "arquivo": "backend/README.md",
+      "sha256": "d4c3465a60e7ea5a38a455ba28f4ea200b439384a998559812622810b2cc9b85",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/branding/identidade-visual.md",
+      "sha256": "8b4cbd0cffde11ea02b366bb3219b77c9160029b9d8caa310922697e9feacefa",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/mer/mer.md",
+      "sha256": "e3b484762822bc5a432579e0245aeb8363d3b996916365c9fc5cc9122e394ba3",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/mer/schema.sql",
+      "sha256": "81dbf3d109df5fd81a92e4d1832569953f15a2a1c4aec1567fd3407a85b52ec8",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/mockups/telas.md",
+      "sha256": "f292890a6f5ea35817cb87c666cdf14316ac28d98cda013fd6c1a810c1ae9081",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/models/uml/casos-de-uso.md",
+      "sha256": "7c0cae6923f2f4128e090218ed3b0be18416af3009006d9f88fb6573f1699848",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/models/uml/maquina-de-estados.md",
+      "sha256": "648ef90b7e9654ae0964ced13fee55afe3c2161af79786cfa3d0dbb74cce891c",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/models/uml/sequencia-chamada-concorrente.md",
+      "sha256": "98ac229c51edee680655a7551fb10552b0f2b5353c8c06811f06d9156eab6e9a",
+      "preservado": true
+    },
+    {
+      "arquivo": "docs/requirements/requisitos.md",
+      "sha256": "d8c21afc22edaa7bc605ce26c490f73647743524b6f079f677479951428b7f8c",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/index.html",
+      "sha256": "6cd7cf093f161454cb761622e791ec86765b76b61b91be80dd5d58da12bff8d8",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/package-lock.json",
+      "sha256": "1d5947548503606d3116d2948b6262def597f5dcd45d9234c5e76326a4ef94a8",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/package.json",
+      "sha256": "6c559a302c41c03a6edd9e38ba53f88ed7361d988142e0db8f884ec0bf66ba28",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/App.jsx",
+      "sha256": "7c57728aea6195ab7f1a8eff4f94193209950c841f9d0e24f5e663e2bb0597e5",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/components/Cabecalho.jsx",
+      "sha256": "f97298e59532128ce85fb2de23c4c6aec83cb7fce1dd1856a218132a4902d4e3",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/components/SenhaTag.jsx",
+      "sha256": "f942e3489bf13456acfc3c00eb931620cc5f085f2ac64fc5ac6198734bfce1c1",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/data/tipos.js",
+      "sha256": "ebe1aefce1119a6f5350fe859229490339db48047586b7a384fba34815350e54",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/main.jsx",
+      "sha256": "e1957bc28559300096218e4d1ae0db5b267de485068c2e706d8bf12bf0d9c25f",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/pages/Atendente.jsx",
+      "sha256": "1b1b7d78b2972b18f1c2afa560d70b4d554c3dd6b611348cd4cd0314e0064635",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/pages/Painel.jsx",
+      "sha256": "ba11840ed10e5d3e18a93f1ad60a50602a77cca55c89ba4b81b65fdaa269de41",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/pages/Totem.jsx",
+      "sha256": "33fb17e11795fb9a78eda598041cfbae4256c4e498717e505df2a2bcee6a130c",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/styles.css",
+      "sha256": "81fabf53183e0828a1ed5f1f2a3a828c415d5cdea33695cfe7f40842ab520d35",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/src/utils/senhas.js",
+      "sha256": "09ba4ea3ecac842c9f04a1d1461fa94bd0194dc83a980f34e87483a312d2f10c",
+      "preservado": true
+    },
+    {
+      "arquivo": "frontend/vite.config.js",
+      "sha256": "14501439875c563028a6d28102ab04a36105e6f013b0803a9b5f62690bf45098",
+      "preservado": true
+    }
+  ]
+}
