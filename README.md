@@ -10,7 +10,7 @@ O cliente retira a senha em um totem, acompanha a chamada em um painel e é aten
 
 ## Estado atual: primeira fase
 
-Esta é a **primeira fase** do projeto: um protótipo só de frontend, com 3 telas ligadas pelo estado do React (Totem, Painel e Atendente). Não há backend nem banco de dados: as senhas ficam na memória da página e **são perdidas ao recarregá-la**. O sistema completo será construído na segunda fase.
+Esta é a **primeira fase do projeto**, que apresenta um protótipo de frontend com três telas integradas pelo estado do React: Totem, Painel e Atendente. Nesta etapa, as senhas são armazenadas temporariamente na memória da página e são perdidas ao recarregá-la. A implementação do backend e do banco de dados será realizada na segunda fase, completando o sistema.
 
 ## Regras de atendimento (sistema completo)
 
