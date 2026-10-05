@@ -1,0 +1,127 @@
+{
+  "suite": "Cauã Andrade — integração em DOM simulado",
+  "executadoEm": "2026-10-05T01:01:19.408Z",
+  "ambiente": {
+    "node": "v24.19.0",
+    "fuso": "America/Sao_Paulo",
+    "dom": "jsdom 26.1.0",
+    "observacao": "Sem navegador real; sem validação visual, áudio ou concorrência de clientes."
+  },
+  "total": 15,
+  "aprovados": 15,
+  "reprovados": 0,
+  "resultados": [
+    {
+      "id": "I01",
+      "descricao": "Totem inicia vazio com SP, SG e SE",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I02",
+      "descricao": "Emissão sequencial e contadores independentes por tipo",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I03",
+      "descricao": "Senha emitida aparece na fila ao navegar",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I04",
+      "descricao": "Chamada remove a senha da fila e registra guichê 2 no painel",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I05",
+      "descricao": "Regra simplificada escolhe SP na fila mista",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I06",
+      "descricao": "Sem SP, SE é escolhida antes de SG",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I07",
+      "descricao": "Somente SG: ordem de chegada é mantida",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I08",
+      "descricao": "Botão de chamada desabilitado em fila vazia",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I09",
+      "descricao": "Painel não antecipa senha emitida ainda não chamada",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I10",
+      "descricao": "Painel limita sete chamadas às cinco mais recentes",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I11",
+      "descricao": "Navegação entre telas conserva a fila em memória",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I12",
+      "descricao": "Cada guichê disponível chama cada tipo de senha",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I13",
+      "descricao": "Atendente mostra a última chamada do guichê selecionado",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I14",
+      "descricao": "Hash inválido abre Totem",
+      "status": "APROVADO"
+    },
+    {
+      "id": "I15",
+      "descricao": "Menu marca a tela atual e rótulo do guichê está presente",
+      "status": "APROVADO"
+    }
+  ],
+  "pendencias": [
+    {
+      "id": "D01",
+      "requisitos": "RF03 / RN02 / RN03",
+      "observado": "SP → SP → SE → SG",
+      "esperado": "SP → SE → SP → SG",
+      "status": "PENDENCIA_CONFIRMADA"
+    },
+    {
+      "id": "D02",
+      "requisitos": "RF02 / RN09 / RNF05",
+      "observado": "Remontagem do App apaga a fila e recomeça em 261004-SP001",
+      "esperado": "Persistir fila e sequência durante o dia. A remontagem simula reinicialização do componente, sem afirmar teste de F5.",
+      "status": "PENDENCIA_CONFIRMADA"
+    },
+    {
+      "id": "D03",
+      "requisitos": "RF04 a RF07 / RF10",
+      "observado": "Ações disponíveis no terminal: Chamar próxima",
+      "esperado": "Rechamada, início, encerramento e registro de não comparecimento na Fase 2.",
+      "status": "NAO_IMPLEMENTADO_NESTA_FASE"
+    },
+    {
+      "id": "D04",
+      "requisitos": "RF02 / RN09",
+      "observado": "261004-SG001 → 261005-SG002",
+      "esperado": "261005-SG001 ao mudar o dia sem reinicializar a página.",
+      "status": "PENDENCIA_CONFIRMADA"
+    },
+    {
+      "id": "D05",
+      "requisitos": "RN04 / RF13",
+      "observado": "As emissões do teste D04 foram aceitas às 23h59 e 00h01.",
+      "esperado": "Controlar o expediente de 7h a 17h no sistema completo.",
+      "status": "NAO_IMPLEMENTADO_NESTA_FASE"
+    }
+  ]
+}
