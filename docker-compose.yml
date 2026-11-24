@@ -1,0 +1,39 @@
+# MySQL 8 + API. Uso (na raiz do repositório):
+#   cp backend/.env.example backend/.env      # e troque as senhas
+#   docker compose --env-file backend/.env up -d --build
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?defina DB_ROOT_PASSWORD em backend/.env}
+      MYSQL_DATABASE: ${DB_NAME:-nassau_tickets}
+      MYSQL_USER: ${DB_USER:-nassau}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD em backend/.env}
+      TZ: America/Recife
+    ports:
+      - "3306:3306"
+    volumes:
+      - dados_mysql:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dados_mysql:

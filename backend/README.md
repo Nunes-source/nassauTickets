@@ -1,9 +1,18 @@
-# Backend
+# Backend (FastAPI + MySQL)
 
-Esta pasta fica reservada para a **segunda fase** do projeto.
+API REST do nassauTickets. Documentação completa no [README da raiz](../README.md); contrato dos endpoints em [`docs/api/contrato-api.md`](../docs/api/contrato-api.md); decisões em [`docs/adr/`](../docs/adr).
 
-Na primeira fase o sistema roda só no frontend (React), com os dados em estado local, sem API nem banco de dados.
+```
+app/
+├── main.py          cria a aplicação (CORS, logs, handlers, routers sob /api/v1)
+├── core/            config, db (retry + transação), security (argon2, JWT, perfis), errors, logging, tempo, periodos
+├── routers/         só HTTP: valida entrada, chama o service, devolve a resposta
+├── services/        regras de negócio
+├── repositories/    todo o SQL (sempre parametrizado, sem ORM)
+└── schemas/         modelos Pydantic (também geram o Swagger)
+database/            schema/*.sql (migrations), migrar.py, seed.py, scripts/ (backup e restauração)
+tests/               pytest
+tools/               simulador (Dev A)
+```
 
-A tecnologia do backend ainda será decidida pelo grupo entre as opções aceitas pelo laboratório (Node.js com Express, Java com Spring Boot ou Python com Flask/FastAPI). Quando for escolhida, a justificativa técnica será registrada no README da raiz.
-
-Uma versão anterior de backend (Node.js com Express) existe no histórico do Git, no commit `45534fb`, e pode ser consultada como ponto de partida.
+Os routers `senhas.py` e `atendimento.py` (Dev A) entram sozinhos na API quando o arquivo existir: basta exportarem `router`.
