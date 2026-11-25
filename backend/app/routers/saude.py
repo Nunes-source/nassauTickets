@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from app.core.db import conectar
 from app.core.errors import RETRY_AFTER_SEG
+from app.repositories import saude as repo
 
 router = APIRouter()
 logger = logging.getLogger("nassau.saude")
@@ -25,9 +26,7 @@ def health():
     try:
         conn = conectar(esperas=())  # sem retry: o monitor quer a resposta rápida
         try:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-                cur.fetchone()
+            repo.ping(conn)
         finally:
             conn.close()
     except Exception:

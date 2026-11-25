@@ -26,6 +26,9 @@ def _conectar_uma_vez() -> Connection:
         cursorclass=DictCursor,
         autocommit=False,
         connect_timeout=3,
+        # Cada comando enxerga o que já foi confirmado por outros. Sem isso, o snapshot do
+        # REPEATABLE READ poderia esconder a senha que o atendente anterior acabou de chamar.
+        init_command="SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED",
     )
 
 

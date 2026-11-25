@@ -26,6 +26,7 @@ class Config:
     cors_origens: list[str]
     expediente_inicio: time
     expediente_fim: time
+    expediente_forcar_aberto: bool
     log_nivel: str
 
 
@@ -47,5 +48,6 @@ def get_config() -> Config:
         cors_origens=origens,
         expediente_inicio=_hora(os.getenv("EXPEDIENTE_INICIO", "07:00")),
         expediente_fim=_hora(os.getenv("EXPEDIENTE_FIM", "17:00")),
+        expediente_forcar_aberto=os.getenv("EXPEDIENTE_FORCAR_ABERTO", "false").strip().lower() in ("1", "true", "sim"),
         log_nivel=os.getenv("LOG_NIVEL", "INFO").upper(),
     )

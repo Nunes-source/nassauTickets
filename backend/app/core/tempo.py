@@ -15,13 +15,40 @@ def hoje() -> date:
     return agora().date()
 
 
-def dentro_do_expediente(momento: datetime | None = None) -> bool:
-    """True se `momento` (padrão: agora) está em [EXPEDIENTE_INICIO, EXPEDIENTE_FIM)."""
-    momento = momento or agora()
+def agora_sem_fuso() -> datetime:
+    """Horário de Recife como o MySQL guarda (DATETIME sem fuso), sem microssegundos
+    (o MySQL arredondaria para cima e a hora gravada poderia ficar 1 s à frente)."""
+    return agora().replace(microsecond=0, tzinfo=None)
+
+
+def _hora_local(momento: datetime):
     if momento.tzinfo is not None:
         momento = momento.astimezone(FUSO)
+    return momento.time()
+
+
+def dentro_do_expediente(momento: datetime | None = None) -> bool:
+    """True se `momento` (padrão: agora) está em [EXPEDIENTE_INICIO, EXPEDIENTE_FIM).
+
+    `EXPEDIENTE_FORCAR_ABERTO=true` (só para demonstração, ADR-004) vale apenas quando
+    `momento` não é informado, isto é, para o "agora" real.
+    """
     config = get_config()
-    return config.expediente_inicio <= momento.time() < config.expediente_fim
+    if momento is None:
+        if config.expediente_forcar_aberto:
+            return True
+        momento = agora()
+    return config.expediente_inicio <= _hora_local(momento) < config.expediente_fim
+
+
+def depois_do_expediente(momento: datetime | None = None) -> bool:
+    """True se já passou do fim do expediente no dia (dispara o descarte, RN-10)."""
+    config = get_config()
+    if momento is None:
+        if config.expediente_forcar_aberto:
+            return False
+        momento = agora()
+    return _hora_local(momento) >= config.expediente_fim
 
 
 def horas_de_expediente() -> float:

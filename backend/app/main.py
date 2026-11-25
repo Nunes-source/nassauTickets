@@ -4,6 +4,8 @@ import importlib
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import logging
+
 from app.core.config import get_config
 from app.core.errors import registrar_handlers
 from app.core.logging import configurar_logging, middleware_requisicao
@@ -24,6 +26,8 @@ TAGS = [
 def criar_app() -> FastAPI:
     config = get_config()
     configurar_logging()
+    if config.expediente_forcar_aberto:
+        logging.getLogger("nassau").warning("EXPEDIENTE_FORCAR_ABERTO=true: expediente ignorado (só para demonstração)")
 
     app = FastAPI(
         title="nassauTickets API",
