@@ -21,6 +21,16 @@ def chamar_proximo(usuario: UsuarioAtual = Depends(usuario_logado), conn: Connec
     return atendimento.chamar_proximo(conn, usuario)
 
 
+@router.get("/atendimentos/atual", response_model=ChamadaResposta | None, tags=TAG,
+            summary="Senha ativa do meu guichê",
+            description=("Devolve a senha em CHAMADA, CHAMADA_NOVAMENTE ou EM_ATENDIMENTO do guichê ocupado pelo "
+                         "atendente, no mesmo formato de `chamar-proximo`, ou `null` se não houver. O front usa isso "
+                         "para retomar o atendimento depois de recarregar a página."),
+            responses=respostas(401, 403, 503))
+def atendimento_atual(usuario: UsuarioAtual = Depends(usuario_logado), conn: Connection = Depends(get_conexao)):
+    return atendimento.atendimento_atual(conn, usuario)
+
+
 @router.get("/fila/resumo", response_model=dict[str, int], tags=TAG, summary="Quantas senhas aguardam, por tipo",
             responses={**respostas(401, 403, 503),
                        200: {"content": {"application/json": {"example": {"SP": 2, "SE": 0, "SG": 5}}}}})

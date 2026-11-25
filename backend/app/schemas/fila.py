@@ -59,6 +59,8 @@ class PainelItem(BaseModel):
     chamada: int
     ultima_chamada: bool
     chamada_em: datetime
+    texto_chamada: str = Field(examples=["Senha geral zero zero seis, guichê um"],
+                               description="Texto para o áudio e para leitores de tela (igual ao de `chamar-proximo`).")
 
 
 class PainelResposta(BaseModel):

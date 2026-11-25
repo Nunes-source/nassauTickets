@@ -39,10 +39,11 @@ Autenticação: cabeçalho `Authorization: Bearer <token>`.
 ```json
 { "ultimas": [
     { "numero":"261127-SP001","tipo":"SP","sequencial":1,"guiche":3,
-      "chamada":2,"ultima_chamada":true,"chamada_em":"2026-11-27T09:15:02-03:00" } ],
+      "chamada":2,"ultima_chamada":true,"chamada_em":"2026-11-27T09:15:02-03:00",
+      "texto_chamada":"Última chamada. Senha prioritária zero zero um, guichê três" } ],
   "atualizado_em":"2026-11-27T09:15:04-03:00" }
 ```
-Nunca inclui a próxima senha (RN-09). O front consulta a cada 2–3 s.
+Nunca inclui a próxima senha (RN-09). O front consulta a cada 2–3 s. `texto_chamada` é o mesmo texto de `chamar-proximo`, para o áudio e para leitores de tela.
 
 ## 3. Autenticação
 | Método e rota | Perfil | Uso |
@@ -58,6 +59,7 @@ Nunca inclui a próxima senha (RN-09). O front consulta a cada 2–3 s.
 | `POST /guiches/{id}/liberar` | Libera o guichê | só o ocupante (ou o gestor) · `409 GUICHE_COM_SENHA_ATIVA` se houver senha ativa |
 | `GET /fila/resumo` | Quantidade aguardando por tipo | `{"SP":2,"SE":0,"SG":5}` |
 | `POST /atendimentos/chamar-proximo` | RF-04. Estratégia do ADR-002/003 | `200` (abaixo) · `404 FILA_VAZIA` |
+| `GET /atendimentos/atual` | Senha ativa (CHAMADA, CHAMADA_NOVAMENTE ou EM_ATENDIMENTO) do guichê do atendente, no formato de `chamar-proximo`, ou `null`. O front usa para retomar o atendimento ao recarregar a página | `200` |
 | `POST /senhas/{id}/chamar-novamente` | RF-05. Só de CHAMADA | `200` com `ultima_chamada:true` |
 | `POST /senhas/{id}/iniciar-atendimento` | RF-06. De CHAMADA ou CHAMADA_NOVAMENTE | `200` `{"senha":{...},"duracao_simulada_seg":412}` |
 | `POST /senhas/{id}/encerrar-atendimento` | RF-07. De EM_ATENDIMENTO | `200` senha ATENDIDA |

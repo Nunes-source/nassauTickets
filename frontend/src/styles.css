@@ -166,3 +166,41 @@ select {
   .fila-item { grid-template-columns: auto 1fr auto; }
   .fila-item .historico-hora { display: none; }
 }
+
+/* Integração com a API: formulários, avisos e botões do terminal do atendente */
+input {
+  font: inherit; padding: .6rem .8rem; border: 2px solid var(--borda); border-radius: 8px;
+  background: #fff; color: var(--texto); width: 100%;
+}
+.login { display: grid; gap: 1rem; max-width: 26rem; }
+.login .subtitulo { margin: 0; }
+
+.aviso { margin: 1rem 0; padding: .75rem 1rem; border-radius: 8px; border: 1px solid; font-weight: 600; }
+.aviso-erro { background: #fdecea; border-color: var(--sp); color: #7a1a12; }
+.aviso-info { background: #fff6dd; border-color: #f2a900; color: #5c4200; }
+.aviso-ok { background: #e6f4ef; border-color: var(--se); color: #0a4a3d; }
+
+.botao-secundario {
+  padding: .6rem 1.1rem; border: 2px solid var(--azul); border-radius: 10px; background: #fff;
+  color: var(--azul); font-weight: 700;
+}
+.botao-secundario:hover:not(:disabled) { background: #eaf2fa; }
+.botao-secundario:disabled { border-color: #8a9bb0; color: #8a9bb0; cursor: not-allowed; }
+.botao-perigo {
+  padding: .85rem 1.5rem; border: 0; border-radius: 10px; background: var(--sp); color: #fff;
+  font-weight: 700; font-size: 1.1rem; box-shadow: var(--sombra);
+}
+.botao-perigo:hover:not(:disabled) { background: #8f1c12; }
+.botao-perigo:disabled { background: #8a9bb0; cursor: not-allowed; box-shadow: none; }
+
+.som-botao { margin-bottom: 1rem; }
+
+.atendente-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.atendente-topo p { margin: 0; }
+.atendente-topo-acoes { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+.ativa-card { margin-top: 1rem; }
+.ativa-rotulo { margin: 0 0 .5rem; color: var(--texto-suave); font-weight: 700; }
+.ativa-acoes { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+
+.guiches-lista { list-style: none; margin: 1rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .75rem; }

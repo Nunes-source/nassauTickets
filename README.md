@@ -9,7 +9,7 @@ O cliente retira a senha em um totem, acompanha a chamada em um painel e é aten
 ## Estado atual
 
 - **Primeira fase (concluída):** protótipo de front-end em React, com os dados na memória da página.
-- **Segunda fase (em andamento):** back end em Python/FastAPI com MySQL. A base (autenticação, perfis, cadastros, relatórios, saúde e operação) e o **núcleo da fila** (emissão, alternância, concorrência, estados, painel, descarte e simulador) estão escritos. A integração do front com a API ainda não foi feita.
+- **Segunda fase (em andamento):** back end em Python/FastAPI com MySQL. A base (autenticação, perfis, cadastros, relatórios, saúde e operação) e o **núcleo da fila** (emissão, alternância, concorrência, estados, painel, descarte e simulador) estão escritos. O **front-end React está integrado à API**: totem, painel e terminal do atendente (login, guichê, chamadas e estados) falam com o back end.
 
 > Legenda: ✅ implementado **e** testado (testes verdes) · 🚧 implementado, testes escritos, ainda sem execução verde registrada · ⏳ planejado.
 
@@ -53,8 +53,17 @@ Totem (emissão SP/SG/SE), painel com as 5 últimas chamadas, terminal do atende
 - Descarte das senhas que sobraram depois das 17h (`FIM_EXPEDIENTE`).
 - Simulador de um dia inteiro pela API, com ~5% de não comparecimento (`tools/simulador.py`).
 
+### ✅ Front-end integrado à API
+- **Totem:** emite a senha pela API (`POST /senhas`) e mostra o número gerado pelo back end; mostra o motivo quando recusa (por exemplo, fora do expediente) e avisa quando o sistema está indisponível.
+- **Painel:** consulta `GET /painel` a cada 3 s, mostra as 5 últimas chamadas (nunca a próxima) e, se o servidor cair, mantém a última lista na tela com o aviso "Reconectando…".
+- **Terminal do atendente:** login (JWT), escolha de um guichê livre, "Chamar próxima", "Chamar novamente" (última chamada), "Iniciar", "Encerrar" e "Cliente não compareceu", com a fila por tipo. Ao recarregar a página, retoma a senha ativa do guichê (`GET /atendimentos/atual`). Sessão expirada volta ao login.
+- Testes: 22 testes do front (`npm test`) e o mesmo código do cliente validado contra a API real.
+
+### 🚧 Áudio das chamadas
+Botão "Ativar som das chamadas" no painel: lê o `texto_chamada` da API com a voz do navegador (`speechSynthesis`), só para chamadas novas. Implementado, mas **ainda não testado em um navegador real** (os testes automáticos rodam sem voz).
+
 ### ⏳ Ainda não feito
-Integração do front com a API, áudio das chamadas, bloqueio temporário após 5 logins errados, definição do prazo de retenção do `log_acesso`.
+Bloqueio temporário após 5 logins errados e definição do prazo de retenção do `log_acesso`. O front ainda não tem telas para o gestor (cadastros e relatórios): isso é feito pela API (Swagger em `/docs`).
 
 ## Fila, alternância e concorrência
 
@@ -135,8 +144,11 @@ uvicorn app.main:app --reload
 
 ### Front-end
 ```bash
-cd frontend && npm install && npm run dev      # http://localhost:5173
+cd frontend && npm install && npm run dev      # abra http://localhost:5173
 ```
+Suba a API antes (Docker ou local) e abra o front por **`http://localhost:5173`** (a API libera `localhost` e `127.0.0.1`, que são os padrões do `CORS_ORIGENS`). Se a API estiver em outro endereço, copie `frontend/.env.example` para `frontend/.env` e ajuste `VITE_API_URL`.
+Telas: `#totem`, `#painel` e `#atendente`. Fora das 07h–17h a API recusa emissão e chamada: para demonstrar, use `EXPEDIENTE_FORCAR_ABERTO=true` no `backend/.env`.
+Testes do front: `npm test` (e `npm run build` para conferir a compilação).
 
 ## Usuários de teste (somente desenvolvimento)
 
