@@ -44,7 +44,7 @@ Totem (emissão SP/SG/SE), painel com as 5 últimas chamadas, terminal do atende
 - Logs em JSON com `request_id` (`X-Request-ID`), erros em formato único, Swagger documentado e coleção Postman.
 - Migrations em `.sql` + seed, Docker Compose e CI (GitHub Actions com MySQL).
 
-### 🚧 Back end — núcleo da fila (Dev A)
+### ✅ Back end — núcleo da fila (Dev A)
 - Emissão com numeração `YYMMDD-PPSQ` e contador atômico por tipo e dia; bloqueio fora do expediente.
 - Escolha da próxima senha com **alternância** (ADR-003) e **concorrência** sem duplicidade (lock na fila, ADR-002).
 - Máquina de estados com 7 estados, transições validadas e histórico de cada mudança.
