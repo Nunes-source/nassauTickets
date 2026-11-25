@@ -235,7 +235,8 @@ def test_painel_mostra_as_5_ultimas_e_nunca_a_proxima(cliente, relogio, atendent
     assert numeros == [f"{PREFIXO}-SG00{n}" for n in (6, 5, 4, 3, 2)]  # 5 itens, mais recente primeiro
     assert f"{PREFIXO}-SG007" not in numeros  # a sétima ainda aguarda: nunca aparece (RN-09)
     assert painel["ultimas"][0] == {"numero": f"{PREFIXO}-SG006", "tipo": "SG", "sequencial": 6, "guiche": 1,
-                                    "chamada": 1, "ultima_chamada": False, "chamada_em": "2026-11-27T10:00:00-03:00"}
+                                    "chamada": 1, "ultima_chamada": False, "chamada_em": "2026-11-27T10:00:00-03:00",
+                                    "texto_chamada": "Senha geral zero zero seis, guichê um"}
     assert painel["atualizado_em"].startswith("2026-11-27T10:00")
 
 

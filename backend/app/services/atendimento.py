@@ -146,3 +146,22 @@ def registrar_nao_comparecimento(conn: Connection, usuario: UsuarioAtual, senha_
         _exigir_responsavel(usuario, ultima)
         _transitar(conn, usuario, senha, estados.NAO_COMPARECEU, tempo.agora_sem_fuso(), estados.ABANDONO)
     return _senha(senha, estados.NAO_COMPARECEU)
+
+
+# ------------------------------------------------- senha ativa do guichê
+
+def atendimento_atual(conn: Connection, usuario: UsuarioAtual) -> dict | None:
+    """Senha ativa (CHAMADA, CHAMADA_NOVAMENTE ou EM_ATENDIMENTO) do guichê do atendente, ou None.
+
+    Só leitura. Existe para o front recuperar o estado depois de recarregar a página: sem isso o
+    atendente ficaria preso em GUICHE_COM_SENHA_ATIVA sem saber qual senha encerrar.
+    """
+    guiche = repo_guiches.buscar_por_usuario(conn, usuario.id)
+    if guiche is None:
+        return None
+    ativa = repo_chamadas.ativa_do_guiche(conn, guiche["id"], tempo.hoje())
+    if ativa is None:
+        return None
+    return _resposta_chamada(ativa, ativa["estado"], ativa["guiche_id"], ativa["guiche_numero"],
+                             ativa["numero_chamada"], ativa["chamada_em"])
+
