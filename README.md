@@ -1,20 +1,19 @@
 # nassauTickets
 
-Sistema de controle de atendimento por senhas para um Laboratório de Análises Clínicas, desenvolvido em grupo na disciplina de desenvolvimento Web da UNINASSAU.
+Sistema de controle de atendimento por senhas para um Laboratório de Análises Clínicas, desenvolvido em grupo na UNINASSAU (desenvolvimento Web na primeira fase; **Back End Frameworks 2026.2** na segunda).
 
 ## Sobre o projeto
 
-O cliente retira a senha em um totem, acompanha a chamada em um painel e é atendido em qualquer guichê disponível. O atendente chama o próximo da fila. Na versão completa, o atendente também inicia e encerra o atendimento e o gestor acompanha relatórios diários e mensais.
+O cliente retira a senha em um totem, acompanha a chamada em um painel e é atendido em qualquer guichê disponível. O atendente chama o próximo da fila, inicia e encerra o atendimento, e o gestor acompanha relatórios diários e mensais.
 
-**Objetivo:** aplicar, em um projeto de equipe, desenvolvimento Web com React, organização de repositório, versionamento com Git/GitHub e documentação de requisitos.
+## Estado atual
 
-## Estado atual: primeira fase
+- **Primeira fase (concluída):** protótipo de front-end em React, com os dados na memória da página.
+- **Segunda fase (em andamento):** back end em Python/FastAPI com MySQL. A base (autenticação, perfis, cadastros, relatórios, saúde e operação) e o **núcleo da fila** (emissão, alternância, concorrência, estados, painel, descarte e simulador) estão escritos. A integração do front com a API ainda não foi feita.
 
-Esta é a **primeira fase do projeto**, que apresenta um protótipo de frontend com três telas integradas pelo estado do React: Totem, Painel e Atendente. Nesta etapa, as senhas são armazenadas temporariamente na memória da página e são perdidas ao recarregá-la. A implementação do backend e do banco de dados será realizada na segunda fase, completando o sistema.
+> Legenda: ✅ implementado **e** testado (testes verdes) · 🚧 implementado, testes escritos, ainda sem execução verde registrada · ⏳ planejado.
 
-## Regras de atendimento (sistema completo)
-
-Estas regras vêm da especificação do laboratório, A primeira fase implementa só parte delas (veja Funcionalidades).
+## Regras de atendimento
 
 | Item | Regra |
 |------|-------|
@@ -22,142 +21,173 @@ Estas regras vêm da especificação do laboratório, A primeira fase implementa
 | Tipos de senha | SP (prioritária), SE (retirada de exames) e SG (geral) |
 | Ordem de chamada | `SP → SE\|SG → SP → SE\|SG`; se uma fila estiver vazia, o sistema segue a prioridade com as demais |
 | Numeração | `YYMMDD-PPSQ` (ano, mês, dia, tipo e sequência diária de 3 dígitos, reiniciada todo dia) |
-| Expediente | 7h às 17h; atendimentos em andamento são concluídos e as senhas restantes são descartadas |
-| Não comparecimento | após duas chamadas sem o cliente no guichê, a senha é considerada abandonada |
+| Expediente | 7h às 17h (America/Recife); atendimentos em andamento são concluídos e as senhas restantes são descartadas |
+| Não comparecimento | após duas chamadas sem o cliente no guichê, a senha vai para NAO_COMPARECEU |
 | Painel | exibe as 5 últimas senhas chamadas (nunca a próxima) |
-| Guichês | qualquer guichê atende qualquer tipo de senha |
-| Estados da senha | EMITIDA → AGUARDANDO → CHAMADA → CHAMADA_NOVAMENTE → EM_ATENDIMENTO → ATENDIDA (ou NÃO_COMPARECEU) |
+| Guichês | qualquer guichê atende qualquer tipo; um atendente ocupa no máximo um guichê |
+| Estados da senha | EMITIDA → AGUARDANDO → CHAMADA → CHAMADA_NOVAMENTE → EM_ATENDIMENTO → ATENDIDA (ou NAO_COMPARECEU) |
+
+Regras completas em [`docs/requirements/01-requisitos.md`](docs/requirements/01-requisitos.md).
 
 ## Funcionalidades
 
-### ✅ Implementadas na primeira fase
+### ✅ Primeira fase (front-end)
+Totem (emissão SP/SG/SE), painel com as 5 últimas chamadas, terminal do atendente (guichê 1–3, fila e "Chamar próxima"), integração entre as telas por estado do React, interface responsiva.
 
-- **Totem:** emissão de senha SP, SG ou SE, com numeração `YYMMDD-PPSQ` (sequência por tipo) e cartão com a senha emitida.
-- **Painel de chamadas:** senha chamada agora com o guichê e as últimas chamadas (5 no total); nunca mostra a próxima senha.
-- **Terminal do atendente:** escolha do guichê (1 a 3), fila de espera e botão "Chamar próxima".
-- **Integração entre as telas:** a senha emitida no Totem aparece na fila do Atendente, e a chamada feita pelo Atendente aparece no Painel (estado compartilhado do React).
-- **Interface:** cabeçalho com navegação e relógio, identidade visual própria e layout que se adapta a telas pequenas.
+### 🚧 Back end — base, segurança e operação (Dev B)
+- Login com e-mail e senha (hash **argon2id**), token **JWT**, perfis ATENDENTE e GESTOR (o gestor herda o perfil de atendente), `GET /auth/me`.
+- **Log de acesso** (LGPD) de logins e de toda rota autenticada, sem senha nem token.
+- Guichês: listar, ocupar, liberar e cadastrar (um atendente por guichê, com proteção contra disputa simultânea).
+- Usuários: cadastro, listagem, alteração e inativação; **um único GESTOR ativo** garantido pelo próprio banco.
+- Relatórios diário e mensal (resumo, por senha, TM e auditoria) e seis indicadores de desempenho.
+- `GET /health`, 503 padronizado com `Retry-After` quando o MySQL cai, reconexão automática (1 + 3 tentativas), `backup.sh` e `restaurar.sh`.
+- Logs em JSON com `request_id` (`X-Request-ID`), erros em formato único, Swagger documentado e coleção Postman.
+- Migrations em `.sql` + seed, Docker Compose e CI (GitHub Actions com MySQL).
 
-### 🚧 Em desenvolvimento (parcial)
+### ✅ Back end — núcleo da fila (Dev A)
+- Emissão com numeração `YYMMDD-PPSQ` e contador atômico por tipo e dia; bloqueio fora do expediente.
+- Escolha da próxima senha com **alternância** (ADR-003) e **concorrência** sem duplicidade (lock na fila, ADR-002).
+- Máquina de estados com 7 estados, transições validadas e histórico de cada mudança.
+- Chamar próximo, chamar novamente (última chamada), iniciar (sorteia o TM), encerrar e não compareceu.
+- Painel (5 últimas, nunca a próxima), resumo da fila, texto da chamada para áudio e leitores de tela.
+- Descarte das senhas que sobraram depois das 17h (`FIM_EXPEDIENTE`).
+- Simulador de um dia inteiro pela API, com ~5% de não comparecimento (`tools/simulador.py`).
 
-- **Priorização:** hoje a ordem é simplificada (SP, depois SE, depois SG, e por chegada dentro de cada tipo). Falta a alternância completa `SP → SE|SG → SP`.
-- **Numeração:** funciona no frontend, mas a sequência reinicia ao recarregar a página (falta persistência).
+### ⏳ Ainda não feito
+Integração do front com a API, áudio das chamadas, bloqueio temporário após 5 logins errados, definição do prazo de retenção do `log_acesso`.
 
-### ⏳ Planejadas para a segunda fase
+## Fila, alternância e concorrência
 
-- Backend (tecnologia ainda a decidir) e integração com o frontend.
-- Banco de dados MySQL e persistência dos dados.
-- Login, perfil de gestor e permissões.
-- Início e encerramento do atendimento, "Chamar novamente", não comparecimento e máquina de estados completa.
-- Áudio das chamadas.
-- Controle de concorrência entre atendentes.
-- Expediente (7h às 17h) e descarte de senhas ao fim do dia.
-- Relatórios diário e mensal, auditoria e acompanhamento de desempenho.
-- Comportamento do sistema em caso de falhas.
+**Alternância (ADR-003).** A próxima senha é escolhida por uma função pura: tira o tipo da última chamada dos candidatos (nunca repete se houver outro com fila) e, entre os candidatos, vale SP > SE > SG. Com as três filas cheias: SP → SE → SP → SE…; a SG só é chamada quando a SP ou a SE esvaziam (comportamento esperado da prioridade).
 
-## Visão geral da arquitetura
+**Concorrência (ADR-002).** "Chamar próximo" roda numa transação que primeiro trava a linha do dia em `fila_estado` (`SELECT ... FOR UPDATE`); as chamadas simultâneas esperam ali, então ninguém lê um "último tipo" desatualizado nem pega a mesma senha. A numeração usa `INSERT ... ON DUPLICATE KEY UPDATE ultimo_seq = LAST_INSERT_ID(ultimo_seq + 1)` e os `UNIQUE` de `senhas` e `chamadas` são a segunda barreira. As conexões usam `READ COMMITTED`, para cada comando enxergar o que a chamada anterior acabou de confirmar. `tests/test_concorrencia.py` dispara 6 guichês ao mesmo tempo e confere que não há senha repetida e que a alternância se mantém.
 
-**Primeira fase (atual):** só frontend.
+**Simulador.** Com a API no ar e o seed aplicado:
+```bash
+cd backend
+python -m tools.simulador --senhas 60 --velocidade 120      # 3 atendentes, ~5% não comparecem
+python -m tools.simulador --senhas 120 --velocidade 600 --semente 42
+```
+Fora das 07h–17h, suba a API com `EXPEDIENTE_FORCAR_ABERTO=true` (só para demonstração, nunca em produção). Os dados gerados alimentam os relatórios do gestor. Roteiro de apresentação: [`docs/demonstracao-fila.md`](docs/demonstracao-fila.md).
+
+## Arquitetura
 
 ```
-frontend/ (React)
-  App  ── guarda a fila de espera e as chamadas (estado compartilhado)
-   ├── Totem      emite senhas        → adiciona na fila
-   ├── Atendente  chama a próxima     → tira da fila e registra a chamada
-   └── Painel     mostra as chamadas
+React ── API REST (JSON, /api/v1) ── FastAPI ── MySQL 8.0
+                                       │
+              router ➜ service ➜ repository (SQL direto, parametrizado)
 ```
 
-**Segunda fase (planejada):** frontend, backend e banco de dados, com a tecnologia do backend ainda a definir.
-
-```
-React ── API REST (JSON) ── Backend ── MySQL 8.0
-```
+Camadas: **router** (HTTP e validação) → **service** (regras de negócio) → **repository** (todo o SQL). Diagramas (casos de uso, estados, sequência) em [`docs/models/uml/diagramas.md`](docs/models/uml/diagramas.md); modelo de dados em [`docs/mer/modelo-dados.md`](docs/mer/modelo-dados.md).
 
 ## Tecnologias
 
 | Camada | Tecnologia | Situação |
 |--------|-----------|----------|
 | Frontend | React 19 com Vite | em uso |
-| Backend | a definir | segunda fase |
-| Banco de dados | MySQL 8.0 | segunda fase |
+| Backend | Python 3.14 · FastAPI · PyMySQL (SQL direto) · argon2-cffi · PyJWT · pytest | decidido ([ADR-001](docs/adr/001-stack.md)) |
+| Banco de dados | MySQL 8.0 | em uso |
+| Infra | Docker Compose · GitHub Actions | em uso |
 | Versionamento | Git e GitHub | em uso |
 
-### Backend: decisão pendente
-
-O backend fica para a segunda fase. O grupo deve escolher uma das opções aceitas pelo laboratório: Node.js 22 LTS com Express, Java 21 com Spring Boot ou Python 3.14 com Flask/FastAPI. Depois da escolha, registrar aqui:
-
-- tecnologia escolhida;
-- justificativa técnica;
-- ajustes necessários no `.gitignore`, que hoje cobre apenas Node.js (Java e Python precisam de regras próprias, como `target/` ou `__pycache__/`).
+**Por que FastAPI + SQL direto:** gera Swagger sozinho, valida entrada (Pydantic) e tem injeção de dependências; o MySQL tem bloqueio de linha (`SELECT ... FOR UPDATE`) para a concorrência; SQL direto é mais simples de explicar na arguição. Detalhes e alternativas descartadas no ADR-001.
 
 ## Estrutura do repositório
 
 ```
 nassauTickets/
-├── backend/          # reservado para a segunda fase (hoje só um README)
-├── docs/
-│   ├── branding/     # identidade visual
-│   ├── mer/          # modelo entidade-relacionamento
-│   ├── mockups/      # protótipos das telas
-│   ├── models/uml/   # diagramas UML
-│   └── requirements/ # requisitos e regras de negócio
-├── frontend/         # aplicação React
-│   └── src/
-│       ├── components/   # Cabecalho e SenhaTag
-│       ├── data/         # tipos de senha
-│       ├── pages/        # Totem, Painel e Atendente
-│       └── utils/        # criação de senha e escolha da próxima
-├── .gitignore
-├── LICENSE
+├── backend/
+│   ├── app/            # = /src do edital (core, routers, services, repositories, schemas)
+│   ├── database/       # = /database do edital (schema/*.sql, migrar.py, seed.py, scripts/)
+│   ├── tests/          # = /tests do edital
+│   ├── tools/          # simulador (Dev A)
+│   ├── Dockerfile · requirements.txt · .env.example
+├── docker/mysql-init/  # cria o banco de testes na 1ª subida do MySQL
+├── docs/               # branding, mer, mockups, models/uml, requirements, api, adr, tarefas
+├── frontend/           # aplicação React
+├── .github/workflows/  # CI
+├── docker-compose.yml
 └── README.md
 ```
 
-Todas as pastas já têm arquivos, então não há `.gitkeep`.
-
 ## Como executar
 
-**Pré-requisitos:** Git e Node.js 22 LTS.
+**Pré-requisitos:** Git, Docker (com Compose) e, para rodar fora do Docker, Python 3.14. Front-end: Node.js 22 LTS.
 
+### Back end com Docker (banco + API)
 ```bash
 git clone https://github.com/Nunes-source/nassauTickets.git
-cd nassauTickets/frontend
-npm install
-npm run dev
+cd nassauTickets
+cp backend/.env.example backend/.env        # troque DB_PASSWORD, DB_ROOT_PASSWORD e JWT_SECRET
+docker compose --env-file backend/.env up -d --build
+```
+A API sobe em `http://localhost:8000` (Swagger em `/docs`, saúde em `/api/v1/health`). O contêiner aplica as migrations e o seed sozinho.
+
+### Back end local (só o banco no Docker)
+```bash
+docker compose --env-file backend/.env up -d db
+cd backend
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m database.seed                                # schema + usuários e guichês de teste
+uvicorn app.main:app --reload
 ```
 
-Abra o endereço mostrado no terminal (normalmente `http://localhost:5173`).
+### Front-end
+```bash
+cd frontend && npm install && npm run dev      # http://localhost:5173
+```
 
-**Como usar:** na tela **Totem**, escolha SP, SG ou SE para emitir senhas. Em **Atendente**, escolha o guichê e clique em "Chamar próxima". Em **Painel**, veja as chamadas. As três telas ficam na mesma página do navegador (abas no cabeçalho); se você recarregar, os dados são zerados.
+## Usuários de teste (somente desenvolvimento)
 
-Não há backend nem configuração extra nesta fase.
+| Perfil | E-mail | Senha |
+|--------|--------|-------|
+| GESTOR | `gestor@nassau.local` | `Gestor@123` |
+| ATENDENTE | `atendente1@nassau.local` | `Atendente@123` |
+| ATENDENTE | `atendente2@nassau.local` | `Atendente@123` |
+
+⚠️ Credenciais **só de teste**, criadas pelo seed (que recusa rodar com `AMBIENTE=producao`). Guichês 1, 2 e 3 vêm livres.
+
+## Testes
+
+```bash
+docker compose --env-file backend/.env up -d db      # MySQL de teste (banco <DB_NAME>_test)
+cd backend && pytest -v
+```
+Sem MySQL, os testes que precisam de banco são **pulados** e os demais (tempo, períodos, erros, retry de conexão) rodam normalmente. O CI roda tudo com MySQL a cada push e PR. Os testes de relatórios usam uma cópia do schema da fila (`tests/schema_fila_teste.sql`) enquanto o `02_fila.sql` do Dev A não existir.
+
+## API
+
+- **Swagger/OpenAPI:** `http://localhost:8000/docs` e `/openapi.json`.
+- **Contrato:** [`docs/api/contrato-api.md`](docs/api/contrato-api.md) (endpoints, perfis, formato único de erro e códigos).
+- **Postman:** [`docs/api/nassauTickets.postman_collection.json`](docs/api/nassauTickets.postman_collection.json) (rode "Login" primeiro; o token é guardado sozinho).
+- Rotas públicas: `POST /senhas`, `GET /painel`, `GET /health`. O resto exige `Authorization: Bearer <token>`.
+
+## Segurança, LGPD e disponibilidade
+
+Senhas com argon2id; JWT com expiração; autorização por perfil; SQL sempre parametrizado; segredos só em `.env`; CORS restrito; erros sem detalhes técnicos. O cliente é anônimo (nenhum dado pessoal); só nome e e-mail dos usuários são tratados, com `log_acesso`. Se o MySQL cair, a API responde 503 padronizado com `Retry-After: 5` e volta sozinha quando ele retorna. **Backup:** `backend/database/scripts/backup.sh` (`mysqldump` em `.sql.gz`, retenção de 7 dias; agende no cron). **Restauração:** `backend/database/scripts/restaurar.sh arquivo.sql.gz`. Metas: RPO 24 h, RTO 30 min. Detalhes em [`docs/requirements/02-seguranca-lgpd-disponibilidade.md`](docs/requirements/02-seguranca-lgpd-disponibilidade.md).
+
+## Uso de IA generativa
+
+Parte do código e da documentação do back end foi produzida com apoio do **Claude** (Anthropic), a partir da documentação do projeto. Conforme o edital, o grupo **revisa, entende e se compromete a explicar todo o código** na arguição; trecho que o grupo não souber explicar não deve ser considerado. As versões de dependências e a primeira execução dos testes devem ser confirmadas pelo grupo em máquina com Python 3.14 e MySQL.
 
 ## Documentação
 
-Os artefatos ficam em `docs/`. Eles descrevem o sistema completo; o que a primeira fase cobre está marcado em `docs/requirements/requisitos.md`.
-
-| Pasta | Conteúdo | Situação |
-|-------|----------|----------|
-| [`docs/requirements/`](docs/requirements/requisitos.md) | requisitos funcionais e não funcionais, regras de negócio, casos de uso, estratégia de falhas | ✅ escrito, com o escopo da primeira fase marcado |
-| [`docs/models/uml/`](docs/models/uml) | casos de uso, máquina de estados e sequência da chamada concorrente | ✅ escrito (a máquina de estados e a sequência valem para a segunda fase) |
-| [`docs/mer/`](docs/mer/mer.md) | modelo entidade-relacionamento e `schema.sql` | 🚧 preparado para a segunda fase, ainda não usado pelo sistema |
-| [`docs/mockups/`](docs/mockups/telas.md) | protótipos do Totem, do Painel e do Atendente | ✅ escrito |
-| [`docs/branding/`](docs/branding/identidade-visual.md) | cores, contraste e tipografia | ✅ escrito |
+| Pasta | Conteúdo |
+|-------|----------|
+| [`docs/requirements/`](docs/requirements) | requisitos, regras de negócio e casos de uso (`01`), segurança/LGPD/disponibilidade/indicadores (`02`); `requisitos.md` é a versão da primeira fase |
+| [`docs/mer/`](docs/mer) | modelo de dados do back end (`modelo-dados.md`); `mer.md` e `schema.sql` são da primeira fase |
+| [`docs/models/uml/`](docs/models/uml) | arquitetura, casos de uso, máquina de estados e sequência |
+| [`docs/api/`](docs/api) | contrato da API e coleção Postman |
+| [`docs/adr/`](docs/adr) | decisões: stack, concorrência, alternância, simulação e descartes |
+| [`docs/tarefas/`](docs/tarefas) | tarefas por desenvolvedor |
+| [`docs/branding/`](docs/branding) · [`docs/mockups/`](docs/mockups) | identidade visual e protótipos |
 
 ## Branches e commits
 
 - `main`: versão estável; recebe apenas merges vindos da `dev`.
-- `dev`: branch de desenvolvimento; todo código é enviado primeiro para ela.
-
-A primeira fase foi desenvolvida na `dev` e integrada à `main` por merge, sem reescrever o histórico anterior.
-
-Commits pequenos e objetivos, com prefixo: `feat:`, `fix:`, `docs:` e `chore:`.
-
-```
-chore: cria estrutura inicial de diretórios do projeto
-feat: implementa fila de atendimento
-fix: corrige regra de prioridade
-docs: adiciona requisitos do sistema
-```
+- `dev`: desenvolvimento. Trabalhe em `feat/<area>-<descricao>` criada a partir da `dev` e abra PR para a `dev`, revisado pela outra pessoa.
+- Commits pequenos com prefixo `feat:`, `fix:`, `docs:`, `chore:`, `test:`. Nunca force push; nunca commitar token, senha real ou `.env`.
 
 ## Membros
 
