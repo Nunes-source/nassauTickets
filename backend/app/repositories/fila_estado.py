@@ -5,8 +5,15 @@ from pymysql.connections import Connection
 
 
 def garantir_linha(conn: Connection, dia: date) -> None:
+    """Cria a linha do dia se não existir, já pegando o lock EXCLUSIVO dela.
+
+    Não usar `INSERT IGNORE` aqui: com a linha já existente ele pega um lock COMPARTILHADO, e o
+    `SELECT ... FOR UPDATE` seguinte tenta promovê-lo a exclusivo. Com vários guichês ao mesmo
+    tempo, cada um segura o compartilhado esperando os outros soltarem: deadlock (erro 1213).
+    `ON DUPLICATE KEY UPDATE` pega o lock exclusivo direto; as chamadas só entram em fila.
+    """
     with conn.cursor() as cur:
-        cur.execute("INSERT IGNORE INTO fila_estado (data) VALUES (%s)", (dia,))
+        cur.execute("INSERT INTO fila_estado (data) VALUES (%s) ON DUPLICATE KEY UPDATE data = data", (dia,))
 
 
 def travar_e_ler(conn: Connection, dia: date) -> str | None:

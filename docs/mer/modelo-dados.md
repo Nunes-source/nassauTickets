@@ -198,7 +198,7 @@ SELECT LAST_INSERT_ID();   -- sequência a usar
 ```
 **Cadeado da fila (início da transação de "chamar próximo"):**
 ```sql
-INSERT IGNORE INTO fila_estado (data) VALUES (%s);
+INSERT INTO fila_estado (data) VALUES (%s) ON DUPLICATE KEY UPDATE data = data;  -- lock exclusivo direto (nao use INSERT IGNORE: deadlock, ver ADR-002)
 SELECT ultimo_tipo FROM fila_estado WHERE data = %s FOR UPDATE;
 ```
 **Menor senha aguardando de um tipo:**
