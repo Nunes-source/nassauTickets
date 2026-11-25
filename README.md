@@ -9,7 +9,7 @@ O cliente retira a senha em um totem, acompanha a chamada em um painel e é aten
 ## Estado atual
 
 - **Primeira fase (concluída):** protótipo de front-end em React, com os dados na memória da página.
-- **Segunda fase (em andamento):** back end em Python/FastAPI com MySQL. A base (autenticação, perfis, cadastros, relatórios, saúde e operação) está escrita; o **núcleo da fila** (emissão, chamada, estados, painel, simulador) é a outra metade do trabalho. A integração do front com a API ainda não foi feita.
+- **Segunda fase (em andamento):** back end em Python/FastAPI com MySQL. A base (autenticação, perfis, cadastros, relatórios, saúde e operação) e o **núcleo da fila** (emissão, alternância, concorrência, estados, painel, descarte e simulador) estão escritos. A integração do front com a API ainda não foi feita.
 
 > Legenda: ✅ implementado **e** testado (testes verdes) · 🚧 implementado, testes escritos, ainda sem execução verde registrada · ⏳ planejado.
 
@@ -44,11 +44,31 @@ Totem (emissão SP/SG/SE), painel com as 5 últimas chamadas, terminal do atende
 - Logs em JSON com `request_id` (`X-Request-ID`), erros em formato único, Swagger documentado e coleção Postman.
 - Migrations em `.sql` + seed, Docker Compose e CI (GitHub Actions com MySQL).
 
-### ⏳ Back end — núcleo da fila (Dev A)
-Emissão e numeração, escolha da próxima senha (alternância), concorrência entre guichês, máquina de estados com histórico, chamar próximo/novamente, iniciar, encerrar, não compareceu, painel, descarte no fim do expediente, simulador do TM e testes da fila.
+### ✅ Back end — núcleo da fila (Dev A)
+- Emissão com numeração `YYMMDD-PPSQ` e contador atômico por tipo e dia; bloqueio fora do expediente.
+- Escolha da próxima senha com **alternância** (ADR-003) e **concorrência** sem duplicidade (lock na fila, ADR-002).
+- Máquina de estados com 7 estados, transições validadas e histórico de cada mudança.
+- Chamar próximo, chamar novamente (última chamada), iniciar (sorteia o TM), encerrar e não compareceu.
+- Painel (5 últimas, nunca a próxima), resumo da fila, texto da chamada para áudio e leitores de tela.
+- Descarte das senhas que sobraram depois das 17h (`FIM_EXPEDIENTE`).
+- Simulador de um dia inteiro pela API, com ~5% de não comparecimento (`tools/simulador.py`).
 
 ### ⏳ Ainda não feito
 Integração do front com a API, áudio das chamadas, bloqueio temporário após 5 logins errados, definição do prazo de retenção do `log_acesso`.
+
+## Fila, alternância e concorrência
+
+**Alternância (ADR-003).** A próxima senha é escolhida por uma função pura: tira o tipo da última chamada dos candidatos (nunca repete se houver outro com fila) e, entre os candidatos, vale SP > SE > SG. Com as três filas cheias: SP → SE → SP → SE…; a SG só é chamada quando a SP ou a SE esvaziam (comportamento esperado da prioridade).
+
+**Concorrência (ADR-002).** "Chamar próximo" roda numa transação que primeiro trava a linha do dia em `fila_estado` (`SELECT ... FOR UPDATE`); as chamadas simultâneas esperam ali, então ninguém lê um "último tipo" desatualizado nem pega a mesma senha. A numeração usa `INSERT ... ON DUPLICATE KEY UPDATE ultimo_seq = LAST_INSERT_ID(ultimo_seq + 1)` e os `UNIQUE` de `senhas` e `chamadas` são a segunda barreira. As conexões usam `READ COMMITTED`, para cada comando enxergar o que a chamada anterior acabou de confirmar. `tests/test_concorrencia.py` dispara 6 guichês ao mesmo tempo e confere que não há senha repetida e que a alternância se mantém.
+
+**Simulador.** Com a API no ar e o seed aplicado:
+```bash
+cd backend
+python -m tools.simulador --senhas 60 --velocidade 120      # 3 atendentes, ~5% não comparecem
+python -m tools.simulador --senhas 120 --velocidade 600 --semente 42
+```
+Fora das 07h–17h, suba a API com `EXPEDIENTE_FORCAR_ABERTO=true` (só para demonstração, nunca em produção). Os dados gerados alimentam os relatórios do gestor. Roteiro de apresentação: [`docs/demonstracao-fila.md`](docs/demonstracao-fila.md).
 
 ## Arquitetura
 

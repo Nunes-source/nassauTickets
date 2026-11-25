@@ -5,7 +5,7 @@
 
 **Decisão:** lock pessimista na linha do dia em `fila_estado`, dentro de uma transação:
 1. `BEGIN`
-2. `INSERT IGNORE INTO fila_estado (data) VALUES (hoje)` e `SELECT ultimo_tipo ... FOR UPDATE` (aqui as chamadas simultâneas **entram em fila**)
+2. `INSERT INTO fila_estado (data) VALUES (hoje) ON DUPLICATE KEY UPDATE data = data` e `SELECT ultimo_tipo ... FOR UPDATE` (aqui as chamadas simultâneas **entram em fila**)
 3. `escolher_tipo(ultimo_tipo, tipos_disponiveis)` (ADR-003)
 4. `SELECT ... FROM senhas WHERE estado='AGUARDANDO' AND tipo=? ORDER BY sequencia LIMIT 1 FOR UPDATE`
 5. `UPDATE senhas` → CHAMADA, `INSERT chamadas`, `INSERT senha_historico`, `UPDATE fila_estado.ultimo_tipo`
@@ -16,3 +16,5 @@
 **Complementos:** a numeração usa `INSERT ... ON DUPLICATE KEY UPDATE ultimo_seq = LAST_INSERT_ID(ultimo_seq+1)`; as constraints `UNIQUE` em `senhas` e `chamadas` são a segunda barreira contra duplicidade.
 
 **Demonstração (arguição):** `tests/test_concorrencia.py` dispara N threads chamando em guichês diferentes com M senhas aguardando e confere que não há senha repetida e que a alternância se mantém. A mesma cena roda ao vivo com o simulador.
+
+**Armadilha encontrada nos testes (deadlock 1213):** a primeira versão criava a linha do dia com `INSERT IGNORE`. Com a linha já existente, o `INSERT IGNORE` pega um lock **compartilhado**, e o `SELECT ... FOR UPDATE` seguinte tenta promovê-lo a exclusivo; com vários guichês ao mesmo tempo, cada transação segura o compartilhado esperando as outras soltarem e o MySQL aborta uma delas. `ON DUPLICATE KEY UPDATE` pega o lock exclusivo direto, então as chamadas apenas entram em fila. Vale citar na arguição como justificativa do `ON DUPLICATE KEY UPDATE`.

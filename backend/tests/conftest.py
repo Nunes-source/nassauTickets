@@ -5,6 +5,7 @@
   Com Docker Compose: `docker compose --env-file backend/.env up -d db` e depois `cd backend && pytest`.
 """
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 
@@ -12,6 +13,7 @@ load_dotenv()  # lê backend/.env (se existir) ANTES de fixarmos o que os testes
 os.environ.setdefault("JWT_SECRET", "segredo-de-teste-com-mais-de-16-caracteres")
 os.environ["EXPEDIENTE_INICIO"] = "07:00"
 os.environ["EXPEDIENTE_FIM"] = "17:00"
+os.environ["EXPEDIENTE_FORCAR_ABERTO"] = "true"  # testes de integração rodam em qualquer hora; use a fixture `relogio` para simular horários
 os.environ["DB_NAME"] = os.getenv("DB_NAME_TEST") or f"{os.getenv('DB_NAME', 'nassau_tickets')}_test"
 
 import pytest  # noqa: E402
@@ -90,3 +92,30 @@ def consultar(banco, sql: str, params: tuple = ()) -> list[dict]:
     with banco.cursor() as cur:
         cur.execute(sql, params)
         return list(cur.fetchall())
+
+
+class _Relogio:
+    def __init__(self, tempo):
+        self._tempo = tempo
+        self.momento = datetime(2026, 11, 27, 10, 0, tzinfo=tempo.FUSO)
+
+    def definir(self, hora: int, minuto: int = 0) -> None:
+        self.momento = self.momento.replace(hour=hora, minute=minuto, second=0, microsecond=0)
+
+
+@pytest.fixture
+def relogio(monkeypatch):
+    """Congela `tempo.agora()` em 27/11/2026 10:00 (Recife) e respeita o expediente de verdade.
+
+    Use `relogio.definir(17, 5)` para simular outro horário. Os services chamam `tempo.agora()`
+    pelo módulo, por isso o congelamento vale para eles.
+    """
+    from app.core import config, tempo
+
+    relogio_ = _Relogio(tempo)
+    monkeypatch.setattr(tempo, "agora", lambda: relogio_.momento)
+    monkeypatch.setenv("EXPEDIENTE_FORCAR_ABERTO", "false")
+    config.get_config.cache_clear()
+    yield relogio_
+    monkeypatch.undo()
+    config.get_config.cache_clear()

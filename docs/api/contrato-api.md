@@ -73,6 +73,15 @@ Resposta de chamar (próximo ou novamente):
 Na segunda chamada: `"ultima_chamada": true` e `"texto_chamada": "Última chamada. Senha prioritária zero zero um, guichê três"`. O front usa `texto_chamada` no áudio e para leitores de tela (RNF-07).
 Tipos por extenso: SP "prioritária", SG "geral", SE "exames".
 
+### Regras da fila (como a API se comporta)
+- **Emissão** (`POST /senhas`): contador atômico por tipo e dia; EMITIDA → AGUARDANDO e histórico na mesma transação. `409 FORA_DO_EXPEDIENTE` fora de 07h–17h; `409 SEQUENCIA_ESGOTADA` depois da senha 999 do tipo (o contador não avança).
+- **Chamar próximo** exige, nesta ordem: expediente (`FORA_DO_EXPEDIENTE`), guichê ocupado (`ATENDENTE_SEM_GUICHE`), guichê sem senha ativa (`GUICHE_COM_SENHA_ATIVA`, RN-12) e senha aguardando (`404 FILA_VAZIA`). As chamadas simultâneas entram em fila num lock (ADR-002) e a alternância segue o ADR-003.
+- **Dono da senha:** `chamar-novamente`, `iniciar-atendimento`, `encerrar-atendimento` e `nao-compareceu` só valem para quem chamou a senha (ou o GESTOR, como supervisor); outro atendente recebe `403 SEM_PERMISSAO`. Estado inválido tem prioridade e dá `409 TRANSICAO_INVALIDA` (`detalhes: {"de","para"}`).
+- **Depois das 17h** (RN-10): a primeira requisição (de qualquer rota da fila ou do painel) descarta as senhas AGUARDANDO do dia (NAO_COMPARECEU, `FIM_EXPEDIENTE`, origem SISTEMA). Emitir e chamar próximo ficam bloqueados, mas o que já estava em curso termina: `chamar-novamente`, `iniciar-atendimento`, `encerrar-atendimento` e `nao-compareceu` continuam valendo.
+- **Respostas:** `iniciar-atendimento` → `{"senha":{id,numero,tipo,sequencial,estado},"duracao_simulada_seg":412}`; `encerrar-atendimento` e `nao-compareceu` → `{id,numero,tipo,sequencial,estado}`; `GET /fila/resumo` → `{"SP":2,"SE":0,"SG":5}`.
+- **`texto_chamada`:** tipo por extenso, sequencial dígito a dígito e guichê por extenso (`Senha exames zero quatro zero, guichê doze`); na 2ª chamada começa com `Última chamada.`
+- **Demonstração fora do horário:** `EXPEDIENTE_FORCAR_ABERTO=true` na API ignora o expediente (nunca em produção).
+
 ## 5. Gestor (somente GESTOR)
 | Método e rota | Uso |
 |---|---|
