@@ -193,12 +193,12 @@ Parte do código e da documentação do back end foi produzida com apoio do **Cl
 
 | Nome | Matrícula | Papel |
 |------|-----------|-------|
-| Guilherme Nunes | 01840418 | Scrum Master |
-| Emanuel Lima | 01719420 | Documentador |
-| Gabriel Luann | 01654299 | Testador |
-| Jose Diego | 01827097 | Documentador |
-| Heitor Correia | 01841124 | Desenvolvedor |
-| Cauan Andrade | 01821096 | Testador |
+| Guilherme Fernandes Nunes | 01840418 | Scrum Master |
+| Emanuel Lima Santos| 01719420 | Documentador |
+| Gabriel Luann Gomes De Lima | 01654299 | Testador |
+| Jose Diego De Lima Assis | 01827097 | Documentador |
+| Heitor Correia Dos Santos | 01841124 | Desenvolvedor |
+| Cauã Andrade Do Nascimento| 01821096 | Testador |
 
 ## Licença
 
