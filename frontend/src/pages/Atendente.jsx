@@ -1,64 +1,86 @@
-import { useState } from 'react';
-import SenhaTag from '../components/SenhaTag.jsx';
-import { formatarHora, escolherProxima } from '../utils/senhas.js';
+import { useCallback, useEffect, useState } from 'react';
+import LoginAtendente from '../components/LoginAtendente.jsx';
+import EscolhaGuiche from '../components/EscolhaGuiche.jsx';
+import TerminalAtendente from '../components/TerminalAtendente.jsx';
+import { obterMe } from '../api/api.js';
+import { sessao, textoDoErro } from '../api/cliente.js';
 
-const GUICHES = [1, 2, 3];
+// Fluxo do atendente: login → escolha do guichê → terminal.
+export default function Atendente({ intervaloMs }) {
+  const [usuario, setUsuario] = useState(sessao.ler()); // { token, nome, perfil } ou null
+  const [guiche, setGuiche] = useState(undefined); // undefined = carregando · null = sem guichê · { id, numero }
+  const [aviso, setAviso] = useState(null);
+  const [erroCarga, setErroCarga] = useState(null);
+  const [tentativa, setTentativa] = useState(0);
 
-export default function Atendente({ fila, chamadas, onChamar }) {
-  const [guiche, setGuiche] = useState(1);
+  const sair = useCallback((mensagem = null) => {
+    sessao.limpar();
+    setUsuario(null);
+    setGuiche(undefined);
+    setErroCarga(null);
+    setAviso(mensagem);
+  }, []);
+  const expirar = useCallback(() => sair('Sessão expirada. Entre de novo.'), [sair]);
 
-  const proxima = escolherProxima(fila);
-  const ultimaDoGuiche = chamadas.find((c) => c.guiche === guiche);
-  const porTipo = (tipo) => fila.filter((s) => s.tipo === tipo).length;
+  // Com o token, descobre se este atendente já ocupa um guichê (por exemplo, depois de recarregar a página).
+  useEffect(() => {
+    if (!usuario) return undefined;
+    let vivo = true;
+    setErroCarga(null);
+    obterMe()
+      .then((me) => vivo && setGuiche(me.guiche ?? null))
+      .catch((e) => {
+        if (!vivo) return;
+        if (e.status === 401) expirar();
+        else setErroCarga(textoDoErro(e));
+      });
+    return () => { vivo = false; };
+  }, [usuario, tentativa, expirar]);
+
+  if (!usuario) {
+    return (
+      <LoginAtendente
+        aviso={aviso}
+        aoEntrar={(dados) => {
+          sessao.salvar(dados);
+          setAviso(null);
+          setUsuario(dados);
+        }}
+      />
+    );
+  }
+
+  if (erroCarga) {
+    return (
+      <section>
+        <h1>Terminal do atendente</h1>
+        <p role="alert" className="aviso aviso-erro">{erroCarga}</p>
+        <button className="botao-secundario" onClick={() => setTentativa(tentativa + 1)}>Tentar de novo</button>
+      </section>
+    );
+  }
+
+  if (guiche === undefined) {
+    return (
+      <section>
+        <h1>Terminal do atendente</h1>
+        <p className="subtitulo">Carregando…</p>
+      </section>
+    );
+  }
+
+  if (guiche === null) {
+    return <EscolhaGuiche usuario={usuario} aoOcupar={setGuiche} aoSair={() => sair()} aoExpirar={expirar} />;
+  }
 
   return (
-    <section>
-      <h1>Terminal do atendente</h1>
-
-      <div className="cartao atendente-barra">
-        <label className="campo">
-          Guichê
-          <select value={guiche} onChange={(e) => setGuiche(Number(e.target.value))}>
-            {GUICHES.map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-        </label>
-        <button className="botao-primario" disabled={!proxima} onClick={() => onChamar(guiche)}>
-          Chamar próxima
-        </button>
-      </div>
-
-      <p className="ultima-do-guiche">
-        {ultimaDoGuiche
-          ? <>Última chamada do guichê {guiche}: <strong>{ultimaDoGuiche.numero}</strong> às {formatarHora(ultimaDoGuiche.chamadaEm)}</>
-          : `O guichê ${guiche} ainda não fez nenhuma chamada.`}
-      </p>
-
-      <h2 className="titulo-secao">Fila de espera ({fila.length})</h2>
-      <p className="resumo-fila">
-        {['SP', 'SE', 'SG'].map((tipo) => (
-          <span key={tipo} className="resumo-item"><SenhaTag tipo={tipo} /> {porTipo(tipo)}</span>
-        ))}
-      </p>
-
-      {fila.length === 0 ? (
-        <div className="cartao painel-vazio">
-          <p>Nenhuma senha aguardando.</p>
-          <p className="senha-detalhe">Emita uma senha na tela do Totem para ela aparecer aqui.</p>
-        </div>
-      ) : (
-        <ul className="fila">
-          {fila.map((s) => (
-            <li key={s.numero} className={`fila-item${proxima && s.numero === proxima.numero ? ' fila-proxima' : ''}`}>
-              <SenhaTag tipo={s.tipo} />
-              <span className="historico-senha">{s.numero}</span>
-              {proxima && s.numero === proxima.numero && <span className="selo-proxima">próxima</span>}
-              <span className="historico-hora">{formatarHora(s.emitidaEm)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    <TerminalAtendente
+      guiche={guiche}
+      usuario={usuario}
+      intervaloMs={intervaloMs}
+      aoLiberar={() => setGuiche(null)}
+      aoSair={() => sair()}
+      aoExpirar={expirar}
+    />
   );
 }
