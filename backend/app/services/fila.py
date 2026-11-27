@@ -8,7 +8,7 @@ from app.core import tempo
 from app.core.db import transacao
 from app.repositories import fila_estado as repo_fila
 from app.repositories import senhas as repo_senhas
-from app.services import estados
+from app.services import anuncio, estados
 
 logger = logging.getLogger("nassau.fila")
 
@@ -48,6 +48,7 @@ def painel(conn: Connection) -> dict:
             "numero": l["numero"], "tipo": l["tipo"], "sequencial": l["sequencia"], "guiche": l["guiche"],
             "chamada": l["numero_chamada"], "ultima_chamada": l["numero_chamada"] == 2,
             "chamada_em": tempo.com_fuso(l["chamada_em"]),
+            "texto_chamada": anuncio.texto_chamada(l["tipo"], l["sequencia"], l["guiche"], l["numero_chamada"] == 2),
         }
         for l in repo_senhas.listar_painel(conn, tempo.hoje(), 5)
     ]
